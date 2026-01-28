@@ -337,5 +337,25 @@
     render();
     setInterval(render, 1000);
   </script>
+  <script>
+  // Empêche le retour arrière
+  history.pushState(null, "", location.href);
+  window.onpopstate = function () {
+    history.pushState(null, "", location.href);
+  };
+
+  // Recharge la page si elle perd le focus
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      setTimeout(() => location.reload(), 500);
+    }
+  });
+
+  // Sécurité : recharge toutes les 5 minutes
+  setInterval(() => {
+    location.reload();
+  }, 5 * 60 * 1000);
+</script>
+
 </body>
 </html>

@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KOJUMP - Temps restant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+      .koko-img{
+    margin-top: 3vh;     /* espace sous le logo */
+    width: 16vw;         /* taille de base */
+    max-width: 220px;    /* sécurité sur grands écrans */
+    height: auto;
+
+    object-fit: contain;
+    user-select: none;
+  }
+    .koko-img{
+    filter: drop-shadow(0 0 1vw rgba(0,0,0,.25));
+    }
+      .logo-img{
+    margin-left: 0.9vw;   /* ajuste entre 0.3vw et 0.8vw */
+  }
+    
+
+
+    :root{
+      --bg-left: #0C1F4A;
+      --bg-main: #0e40b4;
+      --bg-right:#0B234F;
+
+      --line: rgba(255,255,255,.45);
+      --white: #fff;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; margin:0; background:#000; }
+    body{
+      font-family: 'Oswald', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--white);
+      overflow:hidden; /* important pour TV */
+    }
+
+    /* 16:9 plein écran */
+    .wrap{
+      height:100vh;
+      width:100vw;
+      display:grid;
+      grid-template-columns: 18vw 57vw 25vw;
+    }
+
+    /* Colonne gauche : en haut, mais centré horizontalement dans la colonne */
+    .left{
+      background:var(--bg-left);
+      padding:5vh 2.5vw;
+      display:flex;
+      flex-direction:column;
+      align-items:center;      /* centre horizontalement dans la colonne */
+      justify-content:flex-start; /* reste en haut */
+    }
+
+
+    /* Logo : on l’agrandit sans déplacer le layout (transform) */
+    .logo-img{
+  width: 15vw;          /* ← augmente/diminue ici */
+  height: auto;
+  max-width: none;
+  object-fit: contain;
+  transform: none;      /* on enlève le scale */
+  filter: drop-shadow(0 0 .6vw rgba(0,0,0,.35));
+}
+
+
+    .main{
+      background:var(--bg-main);
+      padding:5vh 3vw;
+    }
+
+    .right{
+      background:var(--bg-right);
+      padding:5vh 2.6vw;
+    }
+
+    .kicker{
+      font-size:2.1vw;
+      font-weight:500;
+      color:rgba(255,255,255,.72);
+      margin:0 0 .6vh 0;
+    }
+    .title{
+      font-size:3.4vw;
+      font-weight:900;
+      margin:0 0 1.6vh 0;
+      line-height:1.05;
+    }
+    .rule{
+      height:.35vh;
+      background:var(--line);
+      margin:1.6vh 0 1.6vh 0;
+    }
+
+    .rows{ margin-top:1vh; }
+
+    .row{
+      display:flex;
+      align-items:center;
+      gap:1.4vw;
+      padding:2.1vh 0;
+      border-bottom:.35vh solid var(--line);
+    }
+    .dot{
+      width:2.7vw;
+      height:2.7vw;
+      border-radius:999px;
+      flex:0 0 2.7vw;
+      box-shadow: 0 0 0 .25vw rgba(255,255,255,.08) inset;
+    }
+    .rowText{
+      font-size:3.1vw;
+      font-weight:850;
+      letter-spacing:.02vw;
+      white-space:nowrap;
+    }
+    .subText{
+      margin-left:auto;
+      font-size:1.6vw;
+      color:rgba(255,255,255,.78);
+      font-weight:700;
+      letter-spacing:.02vw;
+      white-space:nowrap;
+    }
+
+    .clock{
+      font-size:4.2vw;
+      font-weight:950;
+      text-align:center;
+      letter-spacing:.08vw;
+      margin:0 0 2.2vh 0;
+    }
+    .rightTitleSmall{
+      font-size:2.1vw;
+      font-weight:700;
+      color:rgba(255,255,255,.65);
+      margin:2.4vh 0 0 0;
+    }
+    .rightTitleBig{
+      font-size:3vw;
+      font-weight:950;
+      margin:0;
+      line-height:1.0;
+    }
+    .rightRow{
+      display:flex;
+      align-items:center;
+      gap:1.2vw;
+      padding:2.4vh 0;
+      border-bottom:.35vh solid var(--line);
+      overflow:hidden;
+    }
+    .rightRow .rowText{ font-size:1.6vw; white-space:nowrap; }
+
+    .status{
+      margin-top:1.6vh;
+      font-size:1.25vw;
+      color:rgba(255,255,255,.75);
+    }
+    .right .rule{
+  margin-top: 2.5vh;
+}
+
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="left">
+      <div class="logo-box">
+        <!-- IMPORTANT : mets ton PNG dans le même dossier et appelle-le "logo-kojump.png" -->
+        <img src="logo-kojump.png" alt="Kojump" class="logo-img">
+        <img src="koko.png" alt="koko" class="koko-img">
+      </div>
+    </div>
+
+    <div class="main">
+      <p class="kicker">En pleine session de jump</p>
+      <h1 class="title">Il vous reste...</h1>
+      <div class="rule"></div>
+
+      <div id="upcomingRows" class="rows"></div>
+      <div id="mainStatus" class="status"></div>
+    </div>
+
+    <div class="right">
+      <div id="clock" class="clock">--:--</div>
+
+      <div class="rightTitleSmall">C'est fini</div>
+      <div class="rightTitleBig">depuis</div>
+      <div class="rule"></div>
+
+      <div id="lastRow"></div>
+      <div id="rightStatus" class="status"></div>
+    </div>
+  </div>
+
+  <script>
+    // Planning (heures + couleurs)
+    const SCHEDULE = [
+      ["11:00","violet"],
+      ["11:30","jaune"],
+      ["12:00","corail"],
+      ["12:30","rose"],
+      ["13:00","bleu"],
+      ["13:30","argent"],
+      ["14:00","vert"],
+      ["14:30","rouge"],
+      ["15:00","orange"],
+      ["15:30","turquoise"],
+      ["16:00","violet"],
+      ["16:30","rouge"],
+      ["17:00","corail"],
+      ["17:30","bleu"],
+      ["18:00","argent"],
+      ["18:30","vert"],
+      ["19:00","rose"],
+      ["19:30","orange"],
+      ["20:00","jaune"],
+    ];
+
+    // Teintes (modifiable si vos bracelets ont des couleurs précises)
+    const COLOR_HEX = {
+      violet:   "#7B4DFF",
+      jaune:    "#FFD43B",
+      corail:   "#FF7A59",
+      rose:     "#FF5CCB",
+      bleu:     "#37B6FF",
+      argent:   "#C9CED6",
+      vert:     "#36D665",
+      rouge:    "#FF3B30",
+      orange:   "#FF8A2A",
+      turquoise:"#39E6D0",
+    };
+
+    const WINDOW_MIN = 120; // 2h
+
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function fmtClock(d){ return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; }
+
+    function toDateToday(hhmm){
+      const [h,m] = hhmm.split(":").map(Number);
+      const d = new Date();
+      d.setHours(h,m,0,0);
+      return d;
+    }
+    function minsBetween(a,b){ return Math.floor((b - a) / 60000); }
+
+    function fmtDuration(mins){
+      if (mins < 0) mins = 0;
+      if (mins < 60) return `${mins} minute${mins>1?"s":""}`;
+      const h = Math.floor(mins/60);
+      const m = mins % 60;
+      return m ? `${h}h ${m} minutes` : `${h}h`;
+    }
+
+    function cap(s){
+      if (!s) return "";
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    const DAY = SCHEDULE.map(([t,colorName]) => ({
+      timeStr: t,
+      colorName,
+      colorLabel: cap(colorName),
+      colorHex: COLOR_HEX[colorName] || "#ffffff",
+      time: toDateToday(t),
+    }));
+
+    function render(){
+      const now = new Date();
+
+      // Heure locale (TV/PC)
+      document.getElementById("clock").textContent = fmtClock(now);
+
+      // Sorties dans les 2 prochaines heures
+      const upcoming = DAY
+        .map(s => ({...s, minsLeft: minsBetween(now, s.time)}))
+        .filter(s => s.minsLeft > 0 && s.minsLeft <= WINDOW_MIN)
+        .sort((a,b) => a.minsLeft - b.minsLeft);
+
+      const upcomingEl = document.getElementById("upcomingRows");
+      upcomingEl.innerHTML = upcoming.map(s => `
+        <div class="row">
+          <div class="dot" style="background:${s.colorHex}"></div>
+          <div class="rowText">${fmtDuration(s.minsLeft)} – ${s.colorLabel}</div>
+          <div class="subText">${s.timeStr}</div>
+        </div>
+      `).join("");
+
+      // Dernière sortie passée
+      const past = DAY
+        .map(s => ({...s, minsAgo: minsBetween(s.time, now)}))
+        .filter(s => s.minsAgo >= 0)
+        .sort((a,b) => a.minsAgo - b.minsAgo); // plus proche du présent
+
+      const last = past.length ? past[0] : null;
+      const lastEl = document.getElementById("lastRow");
+
+      if (last){
+        lastEl.innerHTML = `
+          <div class="rightRow">
+            <div class="dot" style="background:${last.colorHex}"></div>
+            <div class="rowText">${fmtDuration(last.minsAgo)} – ${last.colorLabel}</div>
+          </div>
+        `;
+        document.getElementById("rightStatus").textContent = `Dernière sortie : ${last.timeStr}`;
+      } else {
+        lastEl.innerHTML = "";
+        document.getElementById("rightStatus").textContent = "Aucune sortie encore aujourd’hui.";
+      }
+
+      // Messages hors horaires
+      const first = DAY[0]?.time;
+      const lastSlot = DAY[DAY.length-1]?.time;
+      const mainStatus = document.getElementById("mainStatus");
+
+      if (now < first){
+        mainStatus.textContent = `Les sessions commencent à ${DAY[0].timeStr}.`;
+      } else if (now > lastSlot && upcoming.length === 0){
+        mainStatus.textContent = "Fin des sorties pour aujourd’hui.";
+      } else {
+        mainStatus.textContent = "";
+      }
+    }
+
+    render();
+    setInterval(render, 1000);
+  </script>
+</body>
+</html>
